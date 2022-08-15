@@ -19,7 +19,7 @@ export type GameFrameData = {
   gameEndBecause?: string;
 };
 
-const defaultBoard = [1, 2, 3, 4, 5, 0, 0, 6, -5, 0, 0, -6, -1, -2, -3, -4]
+const defaultBoard = [1, 2, 3, 4, 5, 0, 0, 6, -5, 0, 0, -6, -1, -2, -3, -4];
 
 export const useGameStore = defineStore('game', {
   state: () => {
@@ -142,15 +142,18 @@ export const useGameStore = defineStore('game', {
         const killed: number[] = [];
         if (
           [
-            'YXXO',
-            'OYXX',
-            'XXYO',
-            'OXXY',
-            // 'YXXY',
-            // 'XXYY',
-            // 'YYXX',
-            // 'OYXY',
-            // 'YXYO',
+            'YXXO', // 二打一
+            'OYXX', // 二打一
+            'XXYO', // 二打一
+            'OXXY', // 二打一
+            // 'OXYX', // 单夹
+            // 'XYYX', // 双夹
+            // 'XYXO', // 单吃
+            // 'XXYY', // 双吃
+            // 'YYXX', // 双吃
+            // 'YXXY', // 双挑
+            // 'OYXY', // 单挑
+            // 'YXYO', // 单挑
           ].includes(lineStr)
         ) {
           lineStr.split('').forEach((piece, index) => {

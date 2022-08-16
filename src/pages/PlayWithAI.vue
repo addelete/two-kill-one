@@ -77,12 +77,7 @@ import Game from '../components/Game.vue';
 import Nav from '../components/Nav.vue';
 import whitePiece from '../assets/white.png';
 import blackPiece from '../assets/black.png';
-import {
-  useGameStore,
-  PieceType,
-  GameFrameData,
-  PieceMoveData,
-} from '../stores/gameStore';
+import { useGameStore, PieceType, PieceMoveData } from '../stores/gameStore';
 
 import { aiNextStep } from '../utils/ai';
 
@@ -139,6 +134,9 @@ const changeSelfColor = () => {
 
 const handleRestart = () => {
   gameStore.handleRestart();
+  if (gameStore.selfIsWhite) {
+    aiStep();
+  }
 };
 
 const handlePieceMove = (data: PieceMoveData) => {

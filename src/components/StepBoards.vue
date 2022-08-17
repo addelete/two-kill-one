@@ -7,7 +7,7 @@
   >
     <div class="step-boards">
       <Game
-        :selfIsWhite="false"
+        :selfIsWhite="gameStore.selfIsWhite"
         :boardSize="gameStore.boardSize * 0.8"
         :boardGridSize="gameStore.boardGridSize * 0.8"
         :boardEdgeSize="gameStore.boardEdgeSize * 0.8"

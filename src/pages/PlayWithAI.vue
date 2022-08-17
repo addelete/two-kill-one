@@ -86,14 +86,12 @@ import blackPiece from '../assets/black.png';
 import { useGameStore, PieceType, PieceMoveData } from '../stores/gameStore';
 
 import { GameUtils } from '../utils/game';
-import { ref } from 'vue';
 import StepBoards from '../components/StepBoards.vue';
+import { onMounted } from 'vue';
 
 const gameStore = useGameStore();
 
 gameStore.handleRestart();
-
-const showStepBoards = ref(false);
 
 const pieceDraggable = (piece: PieceType) => {
   if (gameStore.gameIsEnd) {
@@ -152,6 +150,12 @@ const handlePieceMove = (data: PieceMoveData) => {
   gameStore.handlePieceMove(data);
   aiStep();
 };
+
+onMounted(() => {
+  if(gameStore.selfIsWhite) {
+    aiStep();
+  }
+})
 </script>
 
 <style lang="scss" scoped>

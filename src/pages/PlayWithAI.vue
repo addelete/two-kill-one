@@ -66,8 +66,11 @@
         <span>己方执{{ gameStore.selfIsWhite ? '白' : '黑' }}</span>
       </div>
       <div class="btns">
-        <button @click="changeSelfColor" v-if="gameStore.steps === 0">
-          换手
+        <button
+          @click="changeSelfColor"
+          v-if="gameStore.steps === 0 || gameStore.selfIsWhite"
+        >
+          {{ gameStore.steps > 0 ? '重开并换手' : '换手' }}
         </button>
         <button @click="gameStore.handleUndo" v-if="gameStore.canUndo">
           悔棋
@@ -135,8 +138,21 @@ const aiStep = () => {
 };
 
 const changeSelfColor = () => {
+  // 重开并换手，进适用于玩的过程中白切黑
+  if (gameStore.selfIsWhite && gameStore.steps > 0) {
+    gameStore.handleRestart();
+    gameStore.changeSelfColor();
+    return;
+  }
+  // 黑换手到白，ai走一步
+  if (!gameStore.selfIsWhite) {
+    gameStore.changeSelfColor();
+    aiStep();
+    return;
+  }
+  // 白换手到黑，仅换手
   gameStore.changeSelfColor();
-  aiStep();
+
 };
 
 const handleRestart = () => {
@@ -152,10 +168,10 @@ const handlePieceMove = (data: PieceMoveData) => {
 };
 
 onMounted(() => {
-  if(gameStore.selfIsWhite) {
+  if (gameStore.selfIsWhite) {
     aiStep();
   }
-})
+});
 </script>
 
 <style lang="scss" scoped>

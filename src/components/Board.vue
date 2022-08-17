@@ -1,22 +1,17 @@
 <template>
   <v-layer>
-    <v-rect
-     :width="boardSize"
-      :height="boardSize"
-      :fill="bgColor"
-    />
+    <v-rect :width="boardSize" :height="boardSize" :fill="bgColor" />
     <v-group :x="boardEdgeSize" :y="boardEdgeSize">
-       <v-rect
-      v-for="(rect, i) of rects"
-      :key="i"
-      :x="rect.x"
-      :y="rect.y"
-      :width="rect.width"
-      :height="rect.height"
-      :fill="rect.fill"
-    />
+      <v-rect
+        v-for="(rect, i) of rects"
+        :key="i"
+        :x="rect.x"
+        :y="rect.y"
+        :width="rect.width"
+        :height="rect.height"
+        :fill="rect.fill"
+      />
     </v-group>
-   
   </v-layer>
 </template>
 

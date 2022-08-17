@@ -92,6 +92,8 @@ import {
 import { useLogStore } from '../stores/logStore';
 import { createRtmChannel } from '../utils/rtm';
 import { useRouter } from 'vue-router';
+import { Rule } from '../utils/game';
+import { MessageUtils } from '../utils/message';
 
 const router = useRouter();
 
@@ -139,6 +141,15 @@ onMounted(async () => {
     });
   });
 
+  gameStore.setRuleChangeListener((rule: Rule) => {
+    channel.sendMessage({
+      text: JSON.stringify({
+        type: 'changeRule',
+        data: rule,
+      }),
+    });
+  });
+
   channel.on('ChannelMessage', (message: RtmMessage) => {
     try {
       otherSideOnline.value = true;
@@ -147,12 +158,19 @@ onMounted(async () => {
         case 'sync':
           gameStore.syncByFrameData(messageObj.data as GameFrameData);
           break;
+        case 'changeRule':
+          gameStore.syncByRule(messageObj.data as Rule);
+          if (messageObj.data) {
+            MessageUtils.open(`游戏规则变更为：${gameStore.ruleStr}`);
+          }
+          break;
       }
     } catch (e) {}
   });
 });
 
 onUnmounted(() => {
+  gameStore.removeRuleChangeListener();
   channel.leave();
 });
 
@@ -161,6 +179,7 @@ const sendGameFrameData = () => {
     text: JSON.stringify({
       type: 'sync',
       data: {
+        rule: gameStore.rule,
         board: gameStore.board,
         steps: gameStore.steps,
         selfIsWhite: !gameStore.selfIsWhite,
@@ -202,15 +221,15 @@ const copyLink = () => {
     let result = document.execCommand('copy');
     document.body.removeChild(input);
     if (result) {
-      alert('邀请链接已复制，可以粘贴发给好友或直接分享本页面给好友');
+      MessageUtils.open('邀请链接已复制，可以粘贴发给好友或直接分享本页面给好友');
     } else {
-      alert(
+      MessageUtils.open(
         '当前浏览器不支持复制功能，请手动复制页面链接或直接分享本页面给好友',
       );
     }
   } catch (e) {
     document.body.removeChild(input);
-    alert('当前浏览器不支持复制功能，请手动复制页面链接或直接分享本页面给好友');
+    MessageUtils.open('当前浏览器不支持复制功能，请手动复制页面链接或直接分享本页面给好友');
   }
 };
 </script>

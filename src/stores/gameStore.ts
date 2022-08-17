@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia';
+import { CacheUtils } from '../utils/cache';
+import { defaultBoard, defaultRule, GameUtils, Rule } from '../utils/game';
 
 export type PieceType = {
   rowIndex: number;
@@ -10,6 +12,7 @@ export type PieceType = {
 export type PieceMoveData = { num: number; x: number; y: number };
 
 export type GameFrameData = {
+  rule: Rule;
   steps?: number;
   board?: number[];
   selfIsWhite?: boolean;
@@ -19,12 +22,11 @@ export type GameFrameData = {
   gameEndBecause?: string;
 };
 
-const defaultBoard = [1, 2, 3, 4, 5, 0, 0, 6, -5, 0, 0, -6, -1, -2, -3, -4];
-
 export const useGameStore = defineStore('game', {
   state: () => {
     return {
       steps: 0,
+      rule: CacheUtils.getItem('rule', defaultRule),
       board: [...defaultBoard],
       boardSize: Math.min(window.innerWidth, window.innerHeight, 640) - 20,
       piecesRedraw: Math.random(), // 重绘
@@ -33,12 +35,17 @@ export const useGameStore = defineStore('game', {
       onlyOnePieceStep: 0, // 某方只剩一个棋子，大于0表示白方，小于0表示黑方，绝对值表示步数
       gameIsEnd: false, // 游戏是否结束
       gameEndBecause: '', // 游戏结束的原因
+      afterRuleChange: (rule: Rule) => {}, // 切换规则后的回调
     };
   },
   getters: {
     boardEdgeSize: (state) => state.boardSize * 0.04,
     boardGridSize: (state) => state.boardSize * 0.23,
     pieceRadius: (state) => state.boardSize * 0.092,
+    ruleStr: (state) =>
+      `${Object.keys(state.rule)
+        .filter((key) => state.rule[key])
+        .join('、')}`,
     pieces: (state) => {
       return state.board.reduce((result, piece, index) => {
         if (piece === 0) {
@@ -127,94 +134,18 @@ export const useGameStore = defineStore('game', {
      * 判断是否结束，如果结束则更新gameIsEnd属性
      */
     checkBoard(rowIndex: number, colIndex: number) {
-      const pieceNumTran = (pieceNum: number) => {
-        if (pieceNum === 0) {
-          return 'O';
-        } else if (pieceNum > 0) {
-          return this.stepIsWhite ? 'X' : 'Y';
-        } else {
-          return this.stepIsWhite ? 'Y' : 'X';
-        }
-      };
-      // 检查一行或一列的棋形，如果符合规则，吃掉反方棋子
-      const checkLine = (line: number[]) => {
-        const lineStr = line.map((i) => pieceNumTran(this.board[i])).join('');
-        const killed: number[] = [];
-        if (
-          [
-            'YXXO', // 二打一
-            'OYXX', // 二打一
-            'XXYO', // 二打一
-            'OXXY', // 二打一
-            // 'OXYX', // 单夹
-            // 'XYYX', // 双夹
-            // 'XYXO', // 单吃
-            // 'XXYY', // 双吃
-            // 'YYXX', // 双吃
-            // 'YXXY', // 双挑
-            // 'OYXY', // 单挑
-            // 'YXYO', // 单挑
-          ].includes(lineStr)
-        ) {
-          lineStr.split('').forEach((piece, index) => {
-            if (piece === 'Y') {
-              killed.push(line[index]);
-            }
-          });
-        }
-        return killed;
-      };
-      // 检查当前行
-      const hKilled = checkLine([
-        rowIndex * 4,
-        rowIndex * 4 + 1,
-        rowIndex * 4 + 2,
-        rowIndex * 4 + 3,
-      ]);
-      // 检查当前列
-      const vKilled = checkLine([
+      const killed = GameUtils.checkBoard(
+        this.board,
+        rowIndex,
         colIndex,
-        colIndex + 4,
-        colIndex + 8,
-        colIndex + 12,
-      ]);
+        this.rule,
+      );
       // 将被吃掉的棋子从棋盘上移除
-      [...hKilled, ...vKilled].forEach((killed) => {
+      killed.forEach((killed) => {
         this.board[killed] = 0;
       });
-
-      // 检查局面是否结束，即反方没有可移动的棋子
-      // 如果能找到一个反方棋子，且该棋子能移动，则不结束
-      let end = true;
-      for (let i = 0; i < this.board.length; i++) {
-        const item = this.board[i];
-        const isOtherSide = this.stepIsWhite ? item < 0 : item > 0;
-
-        if (isOtherSide) {
-          const rowIndex = Math.floor(i / 4);
-          const colIndex = i % 4;
-          const canMove =
-            [
-              [rowIndex - 1, colIndex],
-              [rowIndex + 1, colIndex],
-              [rowIndex, colIndex - 1],
-              [rowIndex, colIndex + 1],
-            ].findIndex(([r, c]) => {
-              return (
-                r >= 0 &&
-                r < 4 &&
-                c >= 0 &&
-                c < 4 &&
-                this.board[r * 4 + c] === 0
-              );
-            }) > -1;
-          if (canMove) {
-            end = false;
-            break;
-          }
-        }
-      }
-      if (end) {
+      const isEnd = GameUtils.checkGameOver(this.board, this.selfIsWhite);
+      if (isEnd) {
         this.gameIsEnd = true;
         this.gameEndBecause = `${this.stepIsWhite ? '白' : '黑'}方胜利，${
           this.stepIsWhite ? '黑' : '白'
@@ -261,6 +192,25 @@ export const useGameStore = defineStore('game', {
       (Object.keys(data) as (keyof GameFrameData)[]).forEach((key) => {
         (this as any)[key] = data[key];
       });
+    },
+
+    toggleRuleItem(ruleKey: string) {
+      this.rule[ruleKey] = !this.rule[ruleKey];
+      if (typeof this.afterRuleChange === 'function') {
+        this.afterRuleChange(this.rule);
+      }
+    },
+
+    syncByRule(rule: Rule) {
+      this.rule = rule;
+    },
+
+    setRuleChangeListener(callback: (rule: Rule) => void) {
+      this.afterRuleChange = callback;
+    },
+
+    removeRuleChangeListener() {
+      this.afterRuleChange = (rule: Rule) => {};
     },
   },
 });

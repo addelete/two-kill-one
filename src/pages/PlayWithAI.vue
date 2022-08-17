@@ -79,7 +79,7 @@ import whitePiece from '../assets/white.png';
 import blackPiece from '../assets/black.png';
 import { useGameStore, PieceType, PieceMoveData } from '../stores/gameStore';
 
-import { aiNextStep } from '../utils/ai';
+import { GameUtils } from '../utils/game';
 
 const gameStore = useGameStore();
 
@@ -104,24 +104,25 @@ const aiStep = () => {
   }
   // 延时执行，避免操作太快看不清
   setTimeout(() => {
-    const nextStep = aiNextStep(
+    const nextStep = GameUtils.aiNextStep(
       [...gameStore.board],
       gameStore.stepIsWhite,
       !gameStore.selfIsWhite,
+      gameStore.rule,
     );
     if (nextStep) {
       if (gameStore.selfIsWhite) {
-        nextStep.nextRowIndex = 3 - nextStep.nextRowIndex;
-        nextStep.nextColIndex = 3 - nextStep.nextColIndex;
+        nextStep.rowIndex = 3 - nextStep.rowIndex;
+        nextStep.colIndex = 3 - nextStep.colIndex;
       }
       gameStore.handlePieceMove({
         num: nextStep.num,
         x:
           gameStore.boardEdgeSize +
-          gameStore.boardGridSize * nextStep.nextColIndex,
+          gameStore.boardGridSize * nextStep.colIndex,
         y:
           gameStore.boardEdgeSize +
-          gameStore.boardGridSize * nextStep.nextRowIndex,
+          gameStore.boardGridSize * nextStep.rowIndex,
       });
     }
   }, 500);

@@ -39,3 +39,15 @@ button {
   cursor: pointer;
   user-select: none;
 }
+
+
+.message {
+  position: fixed;
+  z-index: 9999;
+  top: 300px;
+  background: #ffee00;
+  color: #222;
+  box-shadow: 0 10px 20px 10px rgba(0,0,0,0.2);
+  padding: 6px 12px;
+  border-radius: 6px;
+}

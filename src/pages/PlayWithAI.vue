@@ -65,9 +65,15 @@
         />
         <span>己方执{{ gameStore.selfIsWhite ? '白' : '黑' }}</span>
       </div>
-      <button @click="changeSelfColor" v-if="gameStore.steps === 0">
-        换手
-      </button>
+      <div class="btns">
+        <button @click="changeSelfColor" v-if="gameStore.steps === 0">
+          换手
+        </button>
+        <button @click="gameStore.handleUndo" v-if="gameStore.canUndo">
+          悔棋
+        </button>
+        <StepBoards />
+      </div>
     </div>
   </div>
 </template>
@@ -80,10 +86,14 @@ import blackPiece from '../assets/black.png';
 import { useGameStore, PieceType, PieceMoveData } from '../stores/gameStore';
 
 import { GameUtils } from '../utils/game';
+import { ref } from 'vue';
+import StepBoards from '../components/StepBoards.vue';
 
 const gameStore = useGameStore();
 
 gameStore.handleRestart();
+
+const showStepBoards = ref(false);
 
 const pieceDraggable = (piece: PieceType) => {
   if (gameStore.gameIsEnd) {
@@ -118,11 +128,9 @@ const aiStep = () => {
       gameStore.handlePieceMove({
         num: nextStep.num,
         x:
-          gameStore.boardEdgeSize +
-          gameStore.boardGridSize * nextStep.colIndex,
+          gameStore.boardEdgeSize + gameStore.boardGridSize * nextStep.colIndex,
         y:
-          gameStore.boardEdgeSize +
-          gameStore.boardGridSize * nextStep.rowIndex,
+          gameStore.boardEdgeSize + gameStore.boardGridSize * nextStep.rowIndex,
       });
     }
   }, 500);
@@ -207,6 +215,12 @@ const handlePieceMove = (data: PieceMoveData) => {
     display: flex;
     align-items: center;
     gap: 8px;
+    .btns {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
   }
 }
 </style>

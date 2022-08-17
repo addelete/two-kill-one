@@ -69,9 +69,13 @@
         />
         <span>己方执{{ gameStore.selfIsWhite ? '白' : '黑' }}</span>
       </div>
-      <button @click="changeSelfColor" v-if="gameStore.steps === 0">
-        换手
-      </button>
+      <div class="btns">
+        <button @click="changeSelfColor" v-if="gameStore.steps === 0">
+          换手
+        </button>
+        <button @click="handleUndo" v-if="gameStore.canUndo">悔棋</button>
+        <StepBoards />
+      </div>
     </div>
   </div>
 </template>
@@ -94,6 +98,7 @@ import { createRtmChannel } from '../utils/rtm';
 import { useRouter } from 'vue-router';
 import { Rule } from '../utils/game';
 import { MessageUtils } from '../utils/message';
+import StepBoards from '../components/StepBoards.vue';
 
 const router = useRouter();
 
@@ -159,10 +164,13 @@ onMounted(async () => {
           gameStore.syncByFrameData(messageObj.data as GameFrameData);
           break;
         case 'changeRule':
-          gameStore.syncByRule(messageObj.data as Rule);
+          gameStore.setRule(messageObj.data as Rule);
           if (messageObj.data) {
             MessageUtils.open(`游戏规则变更为：${gameStore.ruleStr}`);
           }
+          break;
+        case 'undo':
+          MessageUtils.open('对方悔棋');
           break;
       }
     } catch (e) {}
@@ -187,6 +195,7 @@ const sendGameFrameData = () => {
         onlyOnePieceStep: gameStore.onlyOnePieceStep,
         gameIsEnd: gameStore.gameIsEnd,
         gameEndBecause: gameStore.gameEndBecause,
+        stepBoards: gameStore.stepBoards,
       } as GameFrameData,
     }),
   });
@@ -208,6 +217,16 @@ const handlePieceMove = (data: PieceMoveData) => {
   sendGameFrameData();
 };
 
+const handleUndo = () => {
+  gameStore.handleUndo();
+  sendGameFrameData();
+  channel.sendMessage({
+    text: JSON.stringify({
+      type: 'undo',
+    }),
+  });
+};
+
 const copyLink = () => {
   let input = document.createElement('input');
   input.style.position = 'fixed';
@@ -221,7 +240,9 @@ const copyLink = () => {
     let result = document.execCommand('copy');
     document.body.removeChild(input);
     if (result) {
-      MessageUtils.open('邀请链接已复制，可以粘贴发给好友或直接分享本页面给好友');
+      MessageUtils.open(
+        '邀请链接已复制，可以粘贴发给好友或直接分享本页面给好友',
+      );
     } else {
       MessageUtils.open(
         '当前浏览器不支持复制功能，请手动复制页面链接或直接分享本页面给好友',
@@ -229,7 +250,9 @@ const copyLink = () => {
     }
   } catch (e) {
     document.body.removeChild(input);
-    MessageUtils.open('当前浏览器不支持复制功能，请手动复制页面链接或直接分享本页面给好友');
+    MessageUtils.open(
+      '当前浏览器不支持复制功能，请手动复制页面链接或直接分享本页面给好友',
+    );
   }
 };
 </script>
@@ -295,6 +318,12 @@ const copyLink = () => {
     display: flex;
     align-items: center;
     gap: 8px;
+    .btns {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
   }
 }
 </style>

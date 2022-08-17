@@ -1,10 +1,10 @@
-export interface NextStep {
+export interface Step {
   num: number;
   rowIndex: number;
   colIndex: number;
 }
 
-export interface AiNextStep extends NextStep {
+export interface AiNextStep extends Step {
   score: number;
 }
 

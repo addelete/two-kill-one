@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia';
 import { CacheUtils } from '../utils/cache';
-import { defaultBoard, defaultRule, GameUtils, Rule } from '../utils/game';
+import {
+  defaultBoard,
+  defaultRule,
+  GameUtils,
+  Step,
+  Rule,
+} from '../utils/game';
 
 export type PieceType = {
   rowIndex: number;
@@ -20,6 +26,7 @@ export type GameFrameData = {
   onlyOnePieceStep?: number;
   gameIsEnd?: boolean;
   gameEndBecause?: string;
+  stepBoards?: number[][];
 };
 
 export const useGameStore = defineStore('game', {
@@ -35,7 +42,21 @@ export const useGameStore = defineStore('game', {
       onlyOnePieceStep: 0, // 某方只剩一个棋子，大于0表示白方，小于0表示黑方，绝对值表示步数
       gameIsEnd: false, // 游戏是否结束
       gameEndBecause: '', // 游戏结束的原因
-      afterRuleChange: (rule: Rule) => {}, // 切换规则后的回调
+      afterRuleChange: undefined, // 切换规则后的回调
+      stepBoards: [[...defaultBoard]], // 步骤数据，存储每一步的局面数据
+    } as {
+      steps: number;
+      rule: Rule;
+      board: number[];
+      boardSize: number;
+      piecesRedraw: number;
+      selfIsWhite: boolean;
+      stepIsWhite: boolean;
+      onlyOnePieceStep: number;
+      gameIsEnd: boolean;
+      gameEndBecause: string;
+      afterRuleChange?: (rule: Rule) => void;
+      stepBoards: number[][];
     };
   },
   getters: {
@@ -62,6 +83,7 @@ export const useGameStore = defineStore('game', {
         return result;
       }, [] as PieceType[]);
     },
+    canUndo: (state) => state.selfIsWhite ? state.steps > 1 : state.steps > 0,
   },
 
   actions: {
@@ -105,6 +127,7 @@ export const useGameStore = defineStore('game', {
       ) {
         this.board[oldPointIndex] = 0;
         this.board[newPointIndex] = data.num;
+        this.stepBoards.push([...this.board]);
         this.steps++;
         this.checkBoard(newRowIndex, newColIndex); // 检查棋盘是否结束
         if (
@@ -177,6 +200,7 @@ export const useGameStore = defineStore('game', {
       this.stepIsWhite = false;
       this.steps = 0;
       this.board = [...defaultBoard];
+      this.stepBoards = [[...defaultBoard]];
     },
 
     changeSelfColor() {
@@ -201,7 +225,7 @@ export const useGameStore = defineStore('game', {
       }
     },
 
-    syncByRule(rule: Rule) {
+    setRule(rule: Rule) {
       this.rule = rule;
     },
 
@@ -210,7 +234,18 @@ export const useGameStore = defineStore('game', {
     },
 
     removeRuleChangeListener() {
-      this.afterRuleChange = (rule: Rule) => {};
+      this.afterRuleChange = undefined;
     },
+
+    /**
+     * 悔棋
+     */
+    handleUndo() {
+      if (this.steps > 0 && !this.gameIsEnd) {
+        this.steps = this.selfIsWhite === this.stepIsWhite ? this.steps - 2 : this.steps - 1;
+        this.board = [...this.stepBoards[this.steps]];
+        this.stepBoards = this.stepBoards.slice(0, this.steps + 1);
+      }
+    }
   },
 });

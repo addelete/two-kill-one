@@ -7,9 +7,9 @@
       v-if="open"
       :style="{
         width: `${width}px`,
-        height: `${height}px`,
+        height: height ? `${height}px` : 'auto',
         marginLeft: `${-(width / 2)}px`,
-        marginTop: `${-(height / 2)}px`,
+        // marginTop: `${-(height / 2)}px`,
       }"
     >
       <div class="modal-mask" @click="close"></div>
@@ -33,7 +33,6 @@ const props = withDefaults(
   {
     open: false,
     width: Math.min(600, document.documentElement.clientWidth - 40),
-    height: 400,
   },
 );
 
@@ -54,7 +53,7 @@ const close = () => {
 .modal {
   position: fixed;
   left: 50%;
-  top: 50%;
+  top: 100px;
   z-index: 999;
   .modal-mask {
     position: fixed;

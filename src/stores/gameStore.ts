@@ -127,9 +127,10 @@ export const useGameStore = defineStore('game', {
       ) {
         this.board[oldPointIndex] = 0;
         this.board[newPointIndex] = data.num;
+        this.checkBoard(newRowIndex, newColIndex); // 检查棋盘并吃子
+        // GameUtils.log([...this.board])
         this.stepBoards.push([...this.board]);
         this.steps++;
-        this.checkBoard(newRowIndex, newColIndex); // 检查棋盘是否结束
         if (
           !this.gameIsEnd &&
           this.onlyOnePieceStep !== 0 &&

@@ -260,4 +260,15 @@ export class GameUtils {
     }
     return end;
   }
+
+  static log(board: number[]) {
+    let str = "====\n"
+    for (let i = 0; i < board.length; i++) {
+      str += (board[i] > 0 ? "X" : board[i] < 0 ? "Y" : "O")
+      if (i % 4 === 3) {
+        str += "\n";
+      }
+    }
+    console.log(str);
+  }
 }

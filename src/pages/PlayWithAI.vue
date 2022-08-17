@@ -113,28 +113,24 @@ const aiStep = () => {
   if (gameStore.selfIsWhite === gameStore.stepIsWhite) {
     return;
   }
-  // 延时执行，避免操作太快看不清
-  setTimeout(() => {
-    const nextStep = GameUtils.aiNextStep(
-      [...gameStore.board],
-      gameStore.stepIsWhite,
-      !gameStore.selfIsWhite,
-      gameStore.rule,
-    );
-    if (nextStep) {
-      if (gameStore.selfIsWhite) {
-        nextStep.rowIndex = 3 - nextStep.rowIndex;
-        nextStep.colIndex = 3 - nextStep.colIndex;
-      }
-      gameStore.handlePieceMove({
-        num: nextStep.num,
-        x:
-          gameStore.boardEdgeSize + gameStore.boardGridSize * nextStep.colIndex,
-        y:
-          gameStore.boardEdgeSize + gameStore.boardGridSize * nextStep.rowIndex,
-      });
+
+  const nextStep = GameUtils.aiNextStep(
+    [...gameStore.board],
+    gameStore.stepIsWhite,
+    !gameStore.selfIsWhite,
+    gameStore.rule,
+  );
+  if (nextStep) {
+    if (gameStore.selfIsWhite) {
+      nextStep.rowIndex = 3 - nextStep.rowIndex;
+      nextStep.colIndex = 3 - nextStep.colIndex;
     }
-  }, 500);
+    gameStore.handlePieceMove({
+      num: nextStep.num,
+      x: gameStore.boardEdgeSize + gameStore.boardGridSize * nextStep.colIndex,
+      y: gameStore.boardEdgeSize + gameStore.boardGridSize * nextStep.rowIndex,
+    });
+  }
 };
 
 const changeSelfColor = () => {
@@ -152,7 +148,6 @@ const changeSelfColor = () => {
   }
   // 白换手到黑，仅换手
   gameStore.changeSelfColor();
-
 };
 
 const handleRestart = () => {

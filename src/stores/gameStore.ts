@@ -4,7 +4,6 @@ import {
   defaultBoard,
   defaultRule,
   GameUtils,
-  Step,
   Rule,
 } from '../utils/game';
 

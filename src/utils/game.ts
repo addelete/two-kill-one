@@ -35,8 +35,8 @@ export const checkLineRule: {
   二夹二: [{ num: 1221, killed: [1, 2] }],
   二挑二: [{ num: 2112, killed: [0, 3] }],
   一挑二: [
-    { num: 2120, killed: [1] },
-    { num: 212, killed: [2] }, // 0212
+    { num: 2120, killed: [0, 2] },
+    { num: 212, killed: [1, 3] }, // 0212
   ],
 };
 

@@ -71,11 +71,14 @@ export class GameUtils {
     selfIsWhite: boolean,
     rule: Rule,
   ) {
-    let aiNextSteps: AiNextStep[] = [];
     const maxDeep = 3; // 最大搜索深度
     const deepToRotio = (deep: number) => {
       return 1 / Math.pow(3, deep);
     }; // 深度系数，值越小，搜索深度影响越小
+    const stepScore = 1; // 能走步骤得分，不能走就是负分
+    const killScore = 10; // 吃掉对方棋子得分，被吃就是负分
+
+    const aiNextSteps: AiNextStep[] = [];
 
     const calcAiNextStep = (
       board: number[],
@@ -116,9 +119,9 @@ export class GameUtils {
                     colIndex: nextColIndex,
                   }) - 1;
               }
-              // 可以走，积1分
-              aiNextSteps[nextStepIndex].score += scoreScale * 1;
-              // 检查是否可以吃掉对方的棋子，吃掉一个棋子，积5分
+              // 可以走，积步骤分
+              aiNextSteps[nextStepIndex].score += scoreScale * stepScore;
+              // 检查是否可以吃掉对方的棋子
               const nextBoard = [...board];
               nextBoard[rowIndex * 4 + colIndex] = 0;
               nextBoard[nextRowIndex * 4 + nextColIndex] = board[i];
@@ -128,8 +131,9 @@ export class GameUtils {
                 nextColIndex,
                 rule,
               );
+              // 每吃掉一个棋子，积一个吃子分
               aiNextSteps[nextStepIndex].score +=
-                killed.length * scoreScale * 10;
+                killed.length * scoreScale * killScore;
 
               if (deep < maxDeep) {
                 for (const k of killed) {
@@ -145,8 +149,8 @@ export class GameUtils {
                 );
               }
             } else if (deep !== 0) {
-              // 不可以走，积-1分
-              aiNextSteps[nextStepIndex].score += scoreScale * -1;
+              // 不可以走，积负步骤分
+              aiNextSteps[nextStepIndex].score -= scoreScale * stepScore;
             }
           }
         }

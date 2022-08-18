@@ -191,7 +191,6 @@ const sendGameFrameData = () => {
         board: gameStore.board,
         steps: gameStore.steps,
         selfIsWhite: !gameStore.selfIsWhite,
-        stepIsWhite: gameStore.stepIsWhite,
         onlyOnePieceStep: gameStore.onlyOnePieceStep,
         gameIsEnd: gameStore.gameIsEnd,
         gameEndBecause: gameStore.gameEndBecause,

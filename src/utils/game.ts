@@ -206,19 +206,19 @@ export class GameUtils {
     colIndex: number,
     rule: Rule,
   ) {
-    const stepIsWhite = board[rowIndex * 4 + colIndex] > 0;
+    const currentStepIsWhite = board[rowIndex * 4 + colIndex] > 0;
     // 检查当前行
     const hKilled = GameUtils.checkLine(
       board,
       [rowIndex * 4, rowIndex * 4 + 1, rowIndex * 4 + 2, rowIndex * 4 + 3],
-      stepIsWhite,
+      currentStepIsWhite,
       rule,
     );
     // 检查当前列
     const vKilled = GameUtils.checkLine(
       board,
       [colIndex, colIndex + 4, colIndex + 8, colIndex + 12],
-      stepIsWhite,
+      currentStepIsWhite,
       rule,
     );
     const killed = [

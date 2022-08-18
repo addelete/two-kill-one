@@ -22,7 +22,6 @@ export type GameFrameData = {
   steps?: number;
   board?: number[];
   selfIsWhite?: boolean;
-  stepIsWhite?: boolean;
   onlyOnePieceStep?: number;
   gameIsEnd?: boolean;
   gameEndBecause?: string;
@@ -38,7 +37,6 @@ export const useGameStore = defineStore('game', {
       boardSize: Math.min(window.innerWidth, window.innerHeight, 640) - 20,
       piecesRedraw: Math.random(), // 重绘
       selfIsWhite: false, // 自己是白方
-      stepIsWhite: false, // 轮到白方走棋
       onlyOnePieceStep: 0, // 某方只剩一个棋子，大于0表示白方，小于0表示黑方，绝对值表示步数
       gameIsEnd: false, // 游戏是否结束
       gameEndBecause: '', // 游戏结束的原因
@@ -51,7 +49,6 @@ export const useGameStore = defineStore('game', {
       boardSize: number;
       piecesRedraw: number;
       selfIsWhite: boolean;
-      stepIsWhite: boolean;
       onlyOnePieceStep: number;
       gameIsEnd: boolean;
       gameEndBecause: string;
@@ -83,6 +80,7 @@ export const useGameStore = defineStore('game', {
         return result;
       }, [] as PieceType[]);
     },
+    stepIsWhite: (state) => state.steps % 2 === 1,
     canUndo: (state) => state.selfIsWhite ? state.steps > 1 : state.steps > 0,
   },
 
@@ -146,7 +144,6 @@ export const useGameStore = defineStore('game', {
         }
         if (!this.gameIsEnd) {
           this.checkOnlyOnePiece(); // 检查反方是否只剩一个棋子
-          this.stepIsWhite = !this.stepIsWhite;
         }
       }
 
@@ -198,7 +195,6 @@ export const useGameStore = defineStore('game', {
     handleRestart() {
       this.gameIsEnd = false;
       this.onlyOnePieceStep = 0;
-      this.stepIsWhite = false;
       this.steps = 0;
       this.board = [...defaultBoard];
       this.stepBoards = [[...defaultBoard]];

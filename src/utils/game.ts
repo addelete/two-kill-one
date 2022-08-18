@@ -72,6 +72,11 @@ export class GameUtils {
     rule: Rule,
   ) {
     let aiNextSteps: AiNextStep[] = [];
+    const maxDeep = 3; // 最大搜索深度
+    const deepToRotio = (deep: number) => {
+      return 1 / Math.pow(3, deep);
+    }; // 深度系数，值越小，搜索深度影响越小
+
     const calcAiNextStep = (
       board: number[],
       stepIsWhite: boolean,
@@ -81,7 +86,7 @@ export class GameUtils {
     ) => {
       let scoreScale = selfIsWhite === stepIsWhite ? 1 : -1; // 正反馈还是负反馈
       if (deep > 0) {
-        scoreScale = scoreScale / Math.pow(3, deep);
+        scoreScale = scoreScale * deepToRotio(deep); // 根据深度计算系数
       }
 
       for (let i = 0; i < board.length; i++) {
@@ -126,7 +131,7 @@ export class GameUtils {
               aiNextSteps[nextStepIndex].score +=
                 killed.length * scoreScale * 10;
 
-              if (deep < 3) {
+              if (deep < maxDeep) {
                 for (const k of killed) {
                   nextBoard[k] = 0;
                 }
@@ -148,9 +153,9 @@ export class GameUtils {
       }
 
       if (deep === 0) {
+        // console.log(aiNextSteps);
         if (aiNextSteps.length > 1) {
           aiNextSteps.sort((a, b) => b.score - a.score);
-          // return Math.random() > 0.2 ? aiNextSteps[0] : aiNextSteps[1];
         }
         return aiNextSteps[0];
       }
@@ -232,7 +237,7 @@ export class GameUtils {
    * 检查局面是否结束，即反方没有可移动的棋子
    * @param board 棋盘
    * @param stepIsWhite 当前步骤是否白棋
-   * @returns 
+   * @returns
    */
   static checkGameOver(board: number[], stepIsWhite: boolean) {
     let end = true;
@@ -262,11 +267,11 @@ export class GameUtils {
   }
 
   static log(board: number[]) {
-    let str = "====\n"
+    let str = '====\n';
     for (let i = 0; i < board.length; i++) {
-      str += (board[i] > 0 ? "X" : board[i] < 0 ? "Y" : "O")
+      str += board[i] > 0 ? 'X' : board[i] < 0 ? 'Y' : 'O';
       if (i % 4 === 3) {
-        str += "\n";
+        str += '\n';
       }
     }
     console.log(str);

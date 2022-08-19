@@ -134,7 +134,7 @@ export const useGameStore = defineStore('game', {
           this.stepIsWhite === this.onlyOnePieceStep > 0
         ) {
           this.onlyOnePieceStep += this.onlyOnePieceStep > 0 ? 1 : -1;
-          if (Math.abs(this.onlyOnePieceStep) === 10 + 1) {
+          if (Math.abs(this.onlyOnePieceStep) === 11) {
             this.gameIsEnd = true;
             this.gameEndBecause = `${
               this.onlyOnePieceStep > 0 ? '白' : '黑'
@@ -220,10 +220,12 @@ export const useGameStore = defineStore('game', {
       if (typeof this.afterRuleChange === 'function') {
         this.afterRuleChange(this.rule);
       }
+      CacheUtils.setItem('rule', this.rule)
     },
 
     setRule(rule: Rule) {
       this.rule = rule;
+      CacheUtils.setItem('rule', this.rule)
     },
 
     setRuleChangeListener(callback: (rule: Rule) => void) {

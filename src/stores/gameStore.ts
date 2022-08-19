@@ -1,11 +1,6 @@
 import { defineStore } from 'pinia';
 import { CacheUtils } from '../utils/cache';
-import {
-  defaultBoard,
-  defaultRule,
-  GameUtils,
-  Rule,
-} from '../utils/game';
+import { defaultBoard, defaultRule, GameUtils, Rule } from '../utils/game';
 
 export type PieceType = {
   rowIndex: number;
@@ -80,7 +75,12 @@ export const useGameStore = defineStore('game', {
       }, [] as PieceType[]);
     },
     stepIsWhite: (state) => state.steps % 2 === 1,
-    canUndo: (state) => state.selfIsWhite ? state.steps > 1 : state.steps > 0,
+    canUndo: (state) =>
+      state.gameIsEnd
+        ? false
+        : state.selfIsWhite
+        ? state.steps > 1
+        : state.steps > 0,
   },
 
   actions: {
@@ -134,7 +134,7 @@ export const useGameStore = defineStore('game', {
           this.stepIsWhite === this.onlyOnePieceStep > 0
         ) {
           this.onlyOnePieceStep += this.onlyOnePieceStep > 0 ? 1 : -1;
-          if (Math.abs(this.onlyOnePieceStep) === 11) {
+          if (Math.abs(this.onlyOnePieceStep) === 10 + 1) {
             this.gameIsEnd = true;
             this.gameEndBecause = `${
               this.onlyOnePieceStep > 0 ? '白' : '黑'
@@ -164,7 +164,7 @@ export const useGameStore = defineStore('game', {
       killed.forEach((killed) => {
         this.board[killed] = 0;
       });
-      const isEnd = GameUtils.checkGameOver(this.board, this.selfIsWhite);
+      const isEnd = GameUtils.checkGameOver(this.board, this.stepIsWhite);
       if (isEnd) {
         this.gameIsEnd = true;
         this.gameEndBecause = `${this.stepIsWhite ? '白' : '黑'}方胜利，${
@@ -186,6 +186,7 @@ export const useGameStore = defineStore('game', {
       if (otherSideCount === 1) {
         this.onlyOnePieceStep = this.stepIsWhite ? -1 : 1;
       }
+      console.log(this.onlyOnePieceStep)
     },
 
     /**
@@ -238,10 +239,13 @@ export const useGameStore = defineStore('game', {
      */
     handleUndo() {
       if (this.steps > 0 && !this.gameIsEnd) {
-        this.steps = this.selfIsWhite === this.stepIsWhite ? this.steps - 2 : this.steps - 1;
+        this.steps =
+          this.selfIsWhite === this.stepIsWhite
+            ? this.steps - 2
+            : this.steps - 1;
         this.board = [...this.stepBoards[this.steps]];
         this.stepBoards = this.stepBoards.slice(0, this.steps + 1);
       }
-    }
+    },
   },
 });

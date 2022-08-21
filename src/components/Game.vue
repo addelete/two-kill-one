@@ -10,9 +10,10 @@
       :y="boardGridSize / 2 + boardEdgeSize"
     >
       <Piece
-        v-for="piece in pieces"
+        v-for="piece in pieceList"
         :key="piece.num"
         :isWhite="piece.isWhite"
+        :selfIsWhite="selfIsWhite"
         :rowIndex="selfIsWhite ? 3-piece.rowIndex: piece.rowIndex"
         :colIndex="selfIsWhite ? 3-piece.colIndex: piece.colIndex"
         :boardGridSize="boardGridSize"
@@ -30,6 +31,7 @@
 import { PieceMoveData, PieceType } from '../stores/gameStore';
 import Piece from './Piece.vue';
 import Board from './Board.vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps<{
   pieces: PieceType[];
@@ -41,6 +43,23 @@ const props = defineProps<{
   piecesRedraw: number;
   pieceDraggable: (piece: PieceType) => boolean;
 }>();
+
+const pieceList = ref(props.pieces);
+
+watch(
+  () => props.pieces,
+  (newPieces, oldPieces) => {
+    if(newPieces.length === oldPieces.length) {
+      pieceList.value = newPieces;
+    } else {
+      const killedPieces = oldPieces.filter(piece => !newPieces.find(newPiece => newPiece.num === piece.num));
+      pieceList.value = [...newPieces, ...killedPieces];
+      setTimeout(() => {
+        pieceList.value = newPieces;
+      }, 200);
+    }
+  }
+);
 
 
 const emit = defineEmits<{

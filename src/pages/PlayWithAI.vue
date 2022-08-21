@@ -114,23 +114,27 @@ const aiStep = () => {
     return;
   }
 
-  const nextStep = GameUtils.aiNextStep(
-    [...gameStore.board],
-    gameStore.stepIsWhite,
-    !gameStore.selfIsWhite,
-    gameStore.rule,
-  );
-  if (nextStep) {
-    if (gameStore.selfIsWhite) {
-      nextStep.rowIndex = 3 - nextStep.rowIndex;
-      nextStep.colIndex = 3 - nextStep.colIndex;
+  setTimeout(() => {
+    const nextStep = GameUtils.aiNextStep(
+      [...gameStore.board],
+      gameStore.stepIsWhite,
+      !gameStore.selfIsWhite,
+      gameStore.rule,
+    );
+    if (nextStep) {
+      if (gameStore.selfIsWhite) {
+        nextStep.rowIndex = 3 - nextStep.rowIndex;
+        nextStep.colIndex = 3 - nextStep.colIndex;
+      }
+      gameStore.handlePieceMove({
+        num: nextStep.num,
+        x:
+          gameStore.boardEdgeSize + gameStore.boardGridSize * nextStep.colIndex,
+        y:
+          gameStore.boardEdgeSize + gameStore.boardGridSize * nextStep.rowIndex,
+      });
     }
-    gameStore.handlePieceMove({
-      num: nextStep.num,
-      x: gameStore.boardEdgeSize + gameStore.boardGridSize * nextStep.colIndex,
-      y: gameStore.boardEdgeSize + gameStore.boardGridSize * nextStep.rowIndex,
-    });
-  }
+  }, 500);
 };
 
 const changeSelfColor = () => {

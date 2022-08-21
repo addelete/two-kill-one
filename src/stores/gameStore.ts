@@ -87,7 +87,6 @@ export const useGameStore = defineStore('game', {
     /**
      * 处理棋子移动事件
      * @param data 移动后的位置和棋子编号
-     * @param pieceNum 棋子编号
      */
     handlePieceMove(data: PieceMoveData) {
       const oldPointIndex = this.board.findIndex((piece) => piece === data.num);

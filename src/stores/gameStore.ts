@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { CacheUtils } from '../utils/cache';
-import { defaultBoard, defaultRule, GameUtils, Rule } from '../utils/game';
+import { defaultRule, GameUtils, Rule, defaultBoards } from '../utils/game';
 
 export type PieceType = {
   rowIndex: number;
@@ -14,6 +14,7 @@ export type PieceMoveData = { num: number; x: number; y: number };
 export type GameFrameData = {
   rule: Rule;
   steps?: number;
+  boardType: string;
   board?: number[];
   selfIsWhite?: boolean;
   onlyOnePieceStep?: number;
@@ -22,11 +23,16 @@ export type GameFrameData = {
   stepBoards?: number[][];
 };
 
+const rule = CacheUtils.getItem('rule', defaultRule);
+const boardType = CacheUtils.getItem('boardType', '六子冲棋');
+let defaultBoard = defaultBoards[boardType];
+
 export const useGameStore = defineStore('game', {
   state: () => {
     return {
       steps: 0,
-      rule: CacheUtils.getItem('rule', defaultRule),
+      rule,
+      boardType: boardType,
       board: [...defaultBoard],
       boardSize: Math.min(window.innerWidth, window.innerHeight, 640) - 20,
       piecesRedraw: Math.random(), // 重绘
@@ -34,11 +40,12 @@ export const useGameStore = defineStore('game', {
       onlyOnePieceStep: 0, // 某方只剩一个棋子，大于0表示白方，小于0表示黑方，绝对值表示步数
       gameIsEnd: false, // 游戏是否结束
       gameEndBecause: '', // 游戏结束的原因
-      afterRuleChange: undefined, // 切换规则后的回调
       stepBoards: [[...defaultBoard]], // 步骤数据，存储每一步的局面数据
+      settingUpdatedAt: Date.now(), // 主动修改设置的时间戳
     } as {
       steps: number;
       rule: Rule;
+      boardType: string;
       board: number[];
       boardSize: number;
       piecesRedraw: number;
@@ -46,8 +53,8 @@ export const useGameStore = defineStore('game', {
       onlyOnePieceStep: number;
       gameIsEnd: boolean;
       gameEndBecause: string;
-      afterRuleChange?: (rule: Rule) => void;
       stepBoards: number[][];
+      settingUpdatedAt: number;
     };
   },
   getters: {
@@ -185,7 +192,7 @@ export const useGameStore = defineStore('game', {
       if (otherSideCount === 1) {
         this.onlyOnePieceStep = this.stepIsWhite ? -1 : 1;
       }
-      console.log(this.onlyOnePieceStep)
+      console.log(this.onlyOnePieceStep);
     },
 
     /**
@@ -216,23 +223,28 @@ export const useGameStore = defineStore('game', {
 
     toggleRuleItem(ruleKey: string) {
       this.rule[ruleKey] = !this.rule[ruleKey];
-      if (typeof this.afterRuleChange === 'function') {
-        this.afterRuleChange(this.rule);
-      }
-      CacheUtils.setItem('rule', this.rule)
+      CacheUtils.setItem('rule', this.rule);
     },
 
     setRule(rule: Rule) {
       this.rule = rule;
-      CacheUtils.setItem('rule', this.rule)
+      CacheUtils.setItem('rule', this.rule);
     },
 
-    setRuleChangeListener(callback: (rule: Rule) => void) {
-      this.afterRuleChange = callback;
+    setSettingUpdatedAt() {
+      this.settingUpdatedAt = Date.now()
     },
 
-    removeRuleChangeListener() {
-      this.afterRuleChange = undefined;
+    /**
+     * 修改棋盘类型
+     * @param boardType
+     */
+    changeBoardType(boardType: string) {
+      this.boardType = boardType;
+      defaultBoard = defaultBoards[boardType];
+      this.board = [...defaultBoard];
+      this.stepBoards = [[...defaultBoard]];
+      CacheUtils.setItem('boardType', this.boardType);
     },
 
     /**

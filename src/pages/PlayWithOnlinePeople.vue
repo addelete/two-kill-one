@@ -85,7 +85,7 @@ import Game from '../components/Game.vue';
 import Nav from '../components/Nav.vue';
 import whitePiece from '../assets/white.png';
 import blackPiece from '../assets/black.png';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { RtmChannel, RtmMessage, RtmTextMessage } from 'agora-rtm-sdk';
 import {
   useGameStore,
@@ -146,14 +146,18 @@ onMounted(async () => {
     });
   });
 
-  gameStore.setRuleChangeListener((rule: Rule) => {
-    channel.sendMessage({
-      text: JSON.stringify({
-        type: 'changeRule',
-        data: rule,
-      }),
-    });
-  });
+  watch(
+    () => gameStore.settingUpdatedAt,
+    () => {
+      sendGameFrameData();
+      channel.sendMessage({
+        text: JSON.stringify({
+          type: 'changeSetting',
+          data: `${gameStore.boardType}，${gameStore.ruleStr}`,
+        }),
+      });
+    },
+  );
 
   channel.on('ChannelMessage', (message: RtmMessage) => {
     try {
@@ -163,10 +167,9 @@ onMounted(async () => {
         case 'sync':
           gameStore.syncByFrameData(messageObj.data as GameFrameData);
           break;
-        case 'changeRule':
-          gameStore.setRule(messageObj.data as Rule);
+        case 'changeSetting':
           if (messageObj.data) {
-            MessageUtils.open(`游戏规则变更为：${gameStore.ruleStr}`);
+            MessageUtils.open(`游戏设置变更为：${messageObj.data}`);
           }
           break;
         case 'undo':
@@ -178,7 +181,6 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  gameStore.removeRuleChangeListener();
   channel.leave();
 });
 
@@ -188,6 +190,7 @@ const sendGameFrameData = () => {
       type: 'sync',
       data: {
         rule: gameStore.rule,
+        boardType: gameStore.boardType,
         board: gameStore.board,
         steps: gameStore.steps,
         selfIsWhite: !gameStore.selfIsWhite,

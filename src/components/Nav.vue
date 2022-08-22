@@ -5,12 +5,15 @@
         <img :src="homeIcon" />
       </div>
       <div class="title">{{ title }}</div>
-      <div class="show-rules" @click="showRules = true">📖 规则</div>
+      <div class="show-settings" @click="showSettings = true">📖 棋盘规则</div>
     </div>
-    <div class="rule">{{ gameStore.ruleStr }}</div>
+    <div class="setting-str">
+      <div>{{ gameStore.boardType }}</div>
+      <div>{{ gameStore.ruleStr }}</div>
+    </div>
 
-    <Modal :open="showRules" @on-close="showRules = false">
-      <RuleSetting />
+    <Modal :open="showSettings" @on-close="showSettings = false">
+      <Setting />
     </Modal>
   </div>
 </template>
@@ -19,7 +22,7 @@
 import homeIcon from '../assets/home.svg';
 import { useRouter } from 'vue-router';
 import Modal from './Modal.vue';
-import RuleSetting from './RuleSetting.vue';
+import Setting from './Setting.vue';
 import { ref } from 'vue';
 import { useGameStore } from '../stores/gameStore';
 const gameStore = useGameStore();
@@ -31,7 +34,7 @@ const goHome = () => {
   router.replace('/');
 };
 
-const showRules = ref(false);
+const showSettings = ref(false);
 </script>
 
 <style lang="scss">
@@ -56,15 +59,16 @@ const showRules = ref(false);
       margin-left: 10px;
       font-weight: bold;
     }
-    .show-rules {
+    .show-settings {
       margin-left: auto;
       cursor: pointer;
     }
   }
-  .rule {
+  .setting-str {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     color: #aaa;
-    font-size: 12px;
-    text-align: right;
   }
 }
 </style>

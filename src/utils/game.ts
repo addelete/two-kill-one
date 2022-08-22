@@ -86,7 +86,7 @@ export class GameUtils {
     selfIsWhite: boolean,
     rule: Rule,
   ) {
-    const maxDeep = 3; // 最大搜索深度
+    const maxDeep = 2; // 最大搜索深度
     const deepToRotio = (deep: number) => {
       return 1 / Math.pow(3, deep);
     }; // 深度系数，值越小，搜索深度影响越小

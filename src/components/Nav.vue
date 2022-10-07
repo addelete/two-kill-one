@@ -19,6 +19,7 @@
 </template>
 
 <script lang="ts" setup>
+import { sum } from 'mypkg';
 import homeIcon from '../assets/home.svg';
 import { useRouter } from 'vue-router';
 import Modal from './Modal.vue';

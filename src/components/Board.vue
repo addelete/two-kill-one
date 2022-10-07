@@ -28,7 +28,6 @@ const bgColor = '#FFE35B';
 
 const rects = computed(() => {
   const res = [];
-
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
       res.push({

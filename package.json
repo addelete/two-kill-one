@@ -10,6 +10,7 @@
     "oss": " node uploadToOss.mjs"
   },
   "dependencies": {
+    "mypkg": "file:/Users/xiao/Desktop/mypkg",
     "agora-rtm-sdk": "^1.5.0",
     "konva": "^8.3.10",
     "mockjs": "^1.1.0",

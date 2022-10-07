@@ -24,7 +24,9 @@ a:hover {
 
 body {
   margin: 0;
+  overflow: hidden;
 }
+
 
 button {
   border-radius: 6px;
